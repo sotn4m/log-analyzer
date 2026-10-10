@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Protocol
 
 
-class LogLevelInterface(Protocol):
+class ILogLevel(Protocol):
     @property
     def value(self) -> int: ...
 
@@ -14,14 +14,14 @@ class LogLevelInterface(Protocol):
 
 class LogEntry:
     timestamp: datetime
-    level: LogLevelInterface
+    level: ILogLevel
     context: str
     message: str
 
     def __init__(
         self,
         timestamp: tuple[str, str],
-        level: LogLevelInterface,
+        level: ILogLevel,
         context: str,
         message: str,
     ):

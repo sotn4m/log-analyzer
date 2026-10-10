@@ -1,8 +1,9 @@
 import re
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from enum import IntEnum
 
-from log_analyzer.log_entry import LogEntry
+from log_analyzer.log_entry import ILogLevel, LogEntry
 
 
 class IParser(ABC):
@@ -35,6 +36,7 @@ class ZookeeperParser(IParser):
         self.time_format = "%Y-%m-%d %H:%M:%S,%f"
 
     def parse_line(self, line: str) -> LogEntry:
+        line = line.rstrip("\r\n")
         match = self.log_pattern.fullmatch(line)
 
         if match is None:
@@ -46,3 +48,15 @@ class ZookeeperParser(IParser):
             match.group("context"),
             match.group("message"),
         )
+
+    def parse(self, log_file: str) -> dict[ILogLevel, list[LogEntry]]:
+        log_map: dict[ILogLevel, list[LogEntry]] = defaultdict(list)
+        try:
+            with open(log_file) as f:
+                for line in f:
+                    log_entry = self.parse_line(line)
+                    log_map[log_entry.level].append(log_entry)
+        except Exception as e:
+            print(f"Exception caught when parsing {log_file}: {e}")
+
+        return log_map
